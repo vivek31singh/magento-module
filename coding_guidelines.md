@@ -157,3 +157,90 @@ class FlushCache
     }
 }
 ```
+
+#### Test/Unit/Cron/FlushCacheTest.php
+```php
+<?php
+/**
+ * Copyright © Vendor. All rights reserved.
+ */
+declare(strict_types=1);
+
+namespace Vendor\AutoCacheFlush\Test\Unit\Cron;
+
+use PHPUnit\Framework\TestCase;
+use Vendor\AutoCacheFlush\Cron\FlushCache;
+use Magento\Framework\App\Cache\Manager;
+use Psr\Log\LoggerInterface;
+
+class FlushCacheTest extends TestCase
+{
+    /**
+     * @var FlushCache
+     */
+    private FlushCache $flushCache;
+
+    /**
+     * @var Manager|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $cacheManagerMock;
+
+    /**
+     * @var LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $loggerMock;
+
+    protected function setUp(): void
+    {
+        $this->cacheManagerMock = $this->createMock(Manager::class);
+        $this->loggerMock = $this->createMock(LoggerInterface::class);
+
+        $this->flushCache = new FlushCache(
+            $this->cacheManagerMock,
+            $this->loggerMock
+        );
+    }
+
+    public function testExecuteFlushesCacheSuccessfully()
+    {
+        $this->cacheManagerMock->expects($this->once())
+            ->method('flush')
+            ->with([])
+            ->willReturn(true);
+
+        $this->loggerMock->expects($this->once())
+            ->method('info')
+            ->with('Cache flushed successfully via cron.');
+
+        $this->flushCache->execute();
+    }
+
+    public function testExecuteLogsWarningIfFlushFails()
+    {
+        $this->cacheManagerMock->expects($this->once())
+            ->method('flush')
+            ->willReturn(false);
+
+        $this->loggerMock->expects($this->once())
+            ->method('warning')
+            ->with('Cache flush attempt returned false, or nothing to flush.');
+
+        $this->flushCache->execute();
+    }
+
+    public function testExecuteLogsErrorOnException()
+    {
+        $exception = new \Exception('Test error');
+
+        $this->cacheManagerMock->expects($this->once())
+            ->method('flush')
+            ->willThrowException($exception);
+
+        $this->loggerMock->expects($this->once())
+            ->method('error')
+            ->with('Error flushing cache via cron: Test error');
+
+        $this->flushCache->execute();
+    }
+}
+```
