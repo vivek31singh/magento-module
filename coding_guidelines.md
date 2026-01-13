@@ -7,8 +7,12 @@ app/code/Vendor/AutoCacheFlush/
 ├── etc/
 │   ├── module.xml
 │   └── crontab.xml
-└── Cron/
-    └── FlushCache.php
+├── Cron/
+│   └── FlushCache.php
+└── Test/
+    └── Unit/
+        └── Cron/
+            └── FlushCacheTest.php
 ```
 
 ## Naming Conventions
@@ -35,7 +39,7 @@ app/code/Vendor/AutoCacheFlush/
 
 ## Error Handling
 1.  **Try-Catch Blocks**: Wrap the main logic in the `execute` method.
-2.  **Logging**: Use `Psr\Log\LoggerInterface` (injected via constructor) to write exceptions to `exception.log`.
+2.  **Logging**: Use `Psr\Log\LoggerInterface` (injected via constructor) to write exceptions to `exception.log` or `system.log`.
 3.  **Graceful Degradation**: If the cache flush fails, the cron should mark as 'error' or 'missed' in the schedule table but not bring down the system.
 
 ## Dependencies
@@ -48,8 +52,6 @@ app/code/Vendor/AutoCacheFlush/
 2.  `etc/crontab.xml`: Defines the cron job instance:
     *   `job_name`: `auto_cache_flush`
     *   `schedule`: `0 */2 * * *` (Run at minute 0 past every 2nd hour).
-
----
 
 ### [RELEVANT CODE]
 #### registration.php
