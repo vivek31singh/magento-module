@@ -48,3 +48,110 @@ app/code/Vendor/AutoCacheFlush/
 2.  `etc/crontab.xml`: Defines the cron job instance:
     *   `job_name`: `auto_cache_flush`
     *   `schedule`: `0 */2 * * *` (Run at minute 0 past every 2nd hour).
+
+---
+
+### [RELEVANT CODE]
+#### registration.php
+```php
+<?php
+/**
+ * Copyright © Vendor. All rights reserved.
+ */
+
+use Magento\Framework\Component\ComponentRegistrar;
+
+ComponentRegistrar::register(
+    ComponentRegistrar::MODULE,
+    'Vendor_AutoCacheFlush',
+    __DIR__
+);
+```
+
+#### etc/module.xml
+```xml
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Vendor. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Vendor_AutoCacheFlush" setup_version="1.0.0" />
+</config>
+```
+
+#### etc/crontab.xml
+```xml
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Vendor. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Cron/etc/crontab.xsd">
+    <group id="default">
+        <job name="auto_cache_flush" instance="Vendor\AutoCacheFlush\Cron\FlushCache" method="execute">
+            <schedule>0 */2 * * *</schedule>
+        </job>
+    </group>
+</config>
+```
+
+#### Cron/FlushCache.php
+```php
+<?php
+/**
+ * Copyright © Vendor. All rights reserved.
+ */
+declare(strict_types=1);
+
+namespace Vendor\AutoCacheFlush\Cron;
+
+use Magento\Framework\App\Cache\Manager;
+use Psr\Log\LoggerInterface;
+
+class FlushCache
+{
+    /**
+     * @var Manager
+     */
+    private Manager $cacheManager;
+
+    /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
+    /**
+     * @param Manager $cacheManager
+     * @param LoggerInterface $logger
+     */
+    public function __construct(
+        Manager $cacheManager,
+        LoggerInterface $logger
+    ) {
+        $this->cacheManager = $cacheManager;
+        $this->logger = $logger;
+    }
+
+    /**
+     * Execute the cron job to flush cache.
+     *
+     * @return void
+     */
+    public function execute(): void
+    {
+        try {
+            $flushed = $this->cacheManager->flush([]);
+            if ($flushed) {
+                $this->logger->info('Cache flushed successfully via cron.');
+            } else {
+                $this->logger->warning('Cache flush attempt returned false, or nothing to flush.');
+            }
+        } catch (\Exception $e) {
+            $this->logger->error('Error flushing cache via cron: ' . $e->getMessage());
+        }
+    }
+}
+```
