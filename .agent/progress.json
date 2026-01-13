@@ -1,7 +1,8 @@
 {
   "repository": "vivek31singh/magento-module",
   "completed_features": [
-    "Create the module directory structure `app/code/Vendor/AutoCacheFlush/`, the `registration.php` file to register the component, and the `etc/module.xml` file to declare the module name and version."
+    "Create the module directory structure `app/code/Vendor/AutoCacheFlush/`, the `registration.php` file to register the component, and the `etc/module.xml` file to declare the module name and version.",
+    "Create the `app/code/Vendor/AutoCacheFlush/etc/crontab.xml` file to define the cron job schedule (every 2 hours) and configure it to call the `Vendor\\AutoCacheFlush\\Cron\\FlushCache::execute` method."
   ],
-  "last_commit": "feat: create module skeleton with registration files"
+  "last_commit": "feat(cron): add crontab.xml configuration for auto cache flush every 2 hours"
 }
